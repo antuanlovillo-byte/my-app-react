@@ -5,12 +5,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20 # Versión más estable actual
 
       - name: Install Dependencies
         run: npm install
@@ -18,7 +19,7 @@ jobs:
       - name: Build Web App
         run: npm run build
 
-      - name: Install Capacitor
+      - name: Install Capacitor and Platforms
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
           npx cap init "MiApp" "com.miapp.id" --web-dir dist
@@ -30,15 +31,17 @@ jobs:
         with:
           java-version: '17'
           distribution: 'zulu'
+          cache: 'gradle' # Esto ayuda a evitar errores de archivos corruptos
 
       - name: Build Android APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew clean
+          ./gradlew assembleDebug --no-daemon # El modo no-daemon consume menos memoria
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
+          name: mi-app-terminada
           path: android/app/build/outputs/apk/debug/app-debug.apk
